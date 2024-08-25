@@ -1,5 +1,7 @@
 import flet as ft
+from components.memory_usage import memory_test
 
+@memory_test
 class Login(ft.Control):
     def __init__(self, page: ft.Page, pc, *args, **kwargs):
         super().__init__(*args, **kwargs)
