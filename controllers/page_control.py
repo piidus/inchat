@@ -1,7 +1,7 @@
 import flet as ft
 from controllers.menu import menu
 from pages.auth.sign_in import Login
-from pages.page2 import Page2
+from pages.chat.chat_page import Chat
 
 class PageControl:
     def __init__(self, page: ft.Page):
@@ -11,7 +11,7 @@ class PageControl:
         # Dictionary mapping page names to their class instances
         self.pages = {
             "Login": Login(self.page, self),
-            "Page2": Page2(self.page, self),
+            "Chat": Chat(self.page, self),
         }
 
     def load_page(self, page_name: str):

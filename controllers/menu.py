@@ -2,7 +2,7 @@ import flet as ft
 
 def menu(pc):
     return ft.AppBar(
-        title=ft.Text("My App"),
+        title=ft.Text("In-Chat"),
         actions=[
             ft.IconButton(
                 icon=ft.icons.HOME,
@@ -10,7 +10,7 @@ def menu(pc):
             ),
             ft.IconButton(
                 icon=ft.icons.INFO,
-                on_click=lambda _: pc.navigate_to("Page2")
+                on_click=lambda _: pc.navigate_to("Chat")
             ),
         ]
     )

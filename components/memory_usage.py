@@ -1,19 +1,20 @@
 import time
-from resource import getpagesize
+# from resource import getpagesize
 from functools import wraps
 import os
 
 def get_memory_usage():
-    with open('/proc/self/status') as f:
-        for line in f:
-            if 'VmRSS' in line:
-                return int(line.split()[1])  # Memory usage in kilobytes
+    pass
+    # with open('/proc/self/status') as f:
+    #     for line in f:
+    #         if 'VmRSS' in line:
+    #             return int(line.split()[1])  # Memory usage in kilobytes
 
 def memory_test(func):
     def wrapper(*args, **kwargs):
         # Memory usage before the function runs
         mem_before = get_memory_usage()
-        print("Page usage :", getpagesize())
+        # print("Page usage :", getpagesize())
         # Run the function
         result = func(*args, **kwargs)
         

@@ -1,7 +1,7 @@
 import flet as ft
-from components.memory_usage import memory_test
+# from components.memory_usage import memory_test
 
-@memory_test
+# @memory_test
 class Login(ft.Control):
     def __init__(self, page: ft.Page, pc, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -20,7 +20,7 @@ class Login(ft.Control):
         return ft.Column(
             controls=[
                 ft.Text("This is Page 1"),
-                ft.ElevatedButton("Go to Page 2", on_click=lambda _: self.pc.load_page("Page2")),
+                ft.ElevatedButton("Chat", on_click=lambda _: self.pc.load_page("Chat")),
                 ft.Text(f"Last Page: {last_page}", selectable=False),
             ]
         )
