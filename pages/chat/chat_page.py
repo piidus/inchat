@@ -66,10 +66,13 @@ class Chat(Control):
     def text_holder(self, new_chat=None):
         '''It Holds the Input as output'''
         # Container that will hold the text display
+       
         text_column = Column(
             controls=[
-                Text(new_chat),
+                
+                Text(new_chat, text_align='right', size=30, color=colors.BLUE_700),
             ],
+            
             
         )
         return text_column
@@ -77,7 +80,7 @@ class Chat(Control):
     def holder_box(self):
         '''This is the container, holds all output as text_holder'''
         box_height, box_width = self.size(height_percent=60)
-
+        # print(type(self.holder_column)),
         holder = Container(
 
             alignment=alignment.bottom_center,
@@ -87,6 +90,7 @@ class Chat(Control):
             content=Column(
     
                 controls=[self.holder_column,],
+                
                 spacing=5,
                 scroll=ScrollMode.AUTO,
                 auto_scroll=True,
