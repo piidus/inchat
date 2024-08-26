@@ -7,6 +7,8 @@ class Chat(Control):
         super().__init__(*args, **kwargs)
         self.page = page
         self.pc = pc
+        self.text_display = Text("")
+        self.content = self.main_content  
 
     def size(self, height_percent = 100, width_percent = 100):
         height = self.page.height * height_percent / 100
@@ -19,7 +21,26 @@ class Chat(Control):
         self.page.update()
 
     def on_send_click(self, e):
+        # Retrieve the text from the input box and update the text holder
+        input_text = "Sample text"  # This should be retrieved from the actual input control
+        self.text_display.value = input_text
+        self.page.update()  # Refresh the page to reflect changes
         print("Send button clicked")
+        
+    def text_holder(self):
+        # Container that will hold the text display
+        return Container(
+            alignment=alignment.center,
+            bgcolor=colors.BLUE_100,
+            border_radius=10,
+               # Set the width as needed
+            content=Row(
+                controls=[
+                    Text("Text Holder"),
+                    self.text_display],
+            ),  # Display the text
+            border=border.all(1, colors.BLACK),
+        )
     def input_box(self):
     # This container will be used as an input box with specific dimensions
         box_height, box_width = self.size(height_percent=9)
@@ -46,24 +67,48 @@ class Chat(Control):
         )
         
         return containt
+    #Holder Container
+    def holder_box(self):
 
-    def content(self):
+        box_height, box_width = self.size(height_percent=60)
+        holder = Container(
+                alignment=alignment.center,
+                bgcolor=colors.GREEN_100,
+                border_radius=10,
+                height=box_height,  # Half the height of the parent container
+                # width=container_w * 0.8,   # 80% of the parent container's width
+                content=Column(
+                    controls=[Text("Input Holder"),
+                                self.text_holder(),
+                            ],
+                        ),
+                border=border.all(1, colors.BLACK),
+                
+                )
+        return holder
+    def main_content(self):
         last_page = self.page.session.get("last_page")
         container_h, container_w = self.size(70)  # Getting the container size
 
         return Column(     
-            controls=[       
-                Container(
-                    alignment=alignment.bottom_center,
-                    bgcolor=colors.WHITE38, 
-                    border_radius=10,
-                    border=border.all(1, colors.BLACK), 
-                    height=container_h, 
-                    width=container_w,
-                    content=self.input_box()  # Adding the small input box inside the container
-                ),
-                Text("This is Page 2"),
-                ElevatedButton("Go to Page 1", on_click=lambda _: self.pc.load_page("Login")),
-                Text(f"Last Page: {last_page}", selectable=False),
-            ]
-        )
+        controls=[       
+            Container(
+                alignment=alignment.bottom_center,
+                bgcolor=colors.WHITE38, 
+                border_radius=10,
+                border=border.all(1, colors.BLACK), 
+                height=container_h, 
+                width=container_w,
+                content=Column(
+                    controls=[
+                         # Adding the input box inside the inner container
+                        self.holder_box(),
+                        self.input_box(), 
+                    ]
+                )
+            ),
+            Text("This is Page 2"),
+            ElevatedButton("Go to Page 1", on_click=lambda _: self.pc.load_page("Login")),
+            Text(f"Last Page: {last_page}", selectable=False),
+        ]
+    )
