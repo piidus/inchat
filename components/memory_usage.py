@@ -13,16 +13,16 @@ def get_memory_usage():
 def memory_test(func):
     def wrapper(*args, **kwargs):
         # Memory usage before the function runs
-        mem_before = get_memory_usage()
+        # mem_before = get_memory_usage()
         # print("Page usage :", getpagesize())
         # Run the function
         result = func(*args, **kwargs)
         
         # Memory usage after the function runs
-        mem_after = get_memory_usage()
+        # mem_after = get_memory_usage()
         
         print(f"Function '{func.__name__}'")
-        print(f"Memory used: {mem_after - mem_before} KB")
+        # print(f"Memory used: {mem_after - mem_before} KB")
         
         return result
 

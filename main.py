@@ -1,7 +1,7 @@
 from flet import Page, app
 
 from controllers.page_control import PageControl
-# from components.memory_usage import memory_test
+
 
 # @memory_test
 def main(page: Page):
