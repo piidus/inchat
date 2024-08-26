@@ -8,7 +8,9 @@ class Chat(Control):
         self.page = page
         self.pc = pc
         self.text_display = Text("")
+        self.holder_column = Column() 
         self.content = self.main_content  
+
 
     def size(self, height_percent = 100, width_percent = 100):
         height = self.page.height * height_percent / 100
@@ -24,23 +26,10 @@ class Chat(Control):
         # Retrieve the text from the input box and update the text holder
         input_text = "Sample text"  # This should be retrieved from the actual input control
         self.text_display.value = input_text
+        self.text_holder()
         self.page.update()  # Refresh the page to reflect changes
         print("Send button clicked")
         
-    def text_holder(self):
-        # Container that will hold the text display
-        return Container(
-            alignment=alignment.center,
-            bgcolor=colors.BLUE_100,
-            border_radius=10,
-               # Set the width as needed
-            content=Row(
-                controls=[
-                    Text("Text Holder"),
-                    self.text_display],
-            ),  # Display the text
-            border=border.all(1, colors.BLACK),
-        )
     def input_box(self):
     # This container will be used as an input box with specific dimensions
         box_height, box_width = self.size(height_percent=9)
@@ -68,23 +57,43 @@ class Chat(Control):
         
         return containt
     #Holder Container
-    def holder_box(self):
+    def on_send_click(self, e):
+        # Retrieve the text from the input box and append it to the holder box
+        input_text = "Sample text"  # This should be retrieved from the actual input control
 
+        # Create a new Text control with the input text and add it to the holder_column
+        new_text = Text(input_text)
+        self.holder_column.controls.append(new_text)
+
+        self.page.update()  # Refresh the page to reflect changes
+        print("Send button clicked")
+
+    def text_holder(self):
+        # Container that will hold the text display
+        return Container(
+            alignment=alignment.center,
+            bgcolor=colors.BLUE_100,
+            border_radius=10,
+            content=Row(
+                controls=[
+                    self.text_display,
+                ],
+            ),  # Display the text
+            border=border.all(1, colors.BLACK),
+        )
+
+    def holder_box(self):
         box_height, box_width = self.size(height_percent=60)
+
         holder = Container(
-                alignment=alignment.center,
-                bgcolor=colors.GREEN_100,
-                border_radius=10,
-                height=box_height,  # Half the height of the parent container
-                # width=container_w * 0.8,   # 80% of the parent container's width
-                content=Column(
-                    controls=[Text("Input Holder"),
-                                self.text_holder(),
-                            ],
-                        ),
-                border=border.all(1, colors.BLACK),
-                
-                )
+            alignment=alignment.center,
+            bgcolor=colors.GREEN_100,
+            border_radius=10,
+            height=box_height,  # Set the height as needed
+            content=self.holder_column,  # Use the holder_column to append texts
+            border=border.all(1, colors.BLACK),
+        )
+
         return holder
     def main_content(self):
         last_page = self.page.session.get("last_page")
@@ -107,8 +116,8 @@ class Chat(Control):
                     ]
                 )
             ),
-            Text("This is Page 2"),
-            ElevatedButton("Go to Page 1", on_click=lambda _: self.pc.load_page("Login")),
-            Text(f"Last Page: {last_page}", selectable=False),
+            # Text("This is Page 2"),
+            # ElevatedButton("Go to Page 1", on_click=lambda _: self.pc.load_page("Login")),
+            # Text(f"Last Page: {last_page}", selectable=False),
         ]
     )
