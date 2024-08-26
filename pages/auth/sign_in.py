@@ -1,5 +1,5 @@
 import flet as ft
-# from components.memory_usage import memory_test
+from components.models import Database
 
 # @memory_test
 class Login(ft.Control):
@@ -9,6 +9,14 @@ class Login(ft.Control):
         self.pc = pc
 
     def did_mount(self):
+        # first check datebase present or not, if not create one
+        try:
+            db = Database("data/inchat.db")
+            db.create_table(
+                "CREATE TABLE IF NOT EXISTS chats (id INTEGER PRIMARY KEY, name TEXT, message TEXT, time TEXT)"
+            )
+        except Exception as e:
+            print(e)
         self.page.session.set("last_page", "Page1")
         print('did mount page 1')
         self.page.update()

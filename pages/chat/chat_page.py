@@ -1,9 +1,7 @@
-# import flet as ft
-from flet import (Page, Control, Column, Text, TextField, ElevatedButton,
+from flet import (Page, Control, Column, Text, TextField, 
                    Container,colors, border, ScrollMode, Row, 
-                   alignment, Icon, BorderRadius, IconButton, icons)
-class Chat(Control):
-    
+                   alignment, BorderRadius, IconButton, icons)
+class Chat(Control):    
     def __init__(self, page: Page, pc, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.page = page
@@ -11,15 +9,15 @@ class Chat(Control):
         #supply the main content to page controller
         self.content = self.main_content  
 
-
+    # This function is used to calculate the height and width of the container
     def size(self, height_percent = 100, width_percent = 100):
-        # This function is used to calculate the height and width of the container
         height = self.page.height * height_percent / 100
         width = self.page.width * width_percent / 100
         return height, width
-
+    
+    
+    # This function is used to set the last page in the session
     def did_mount(self):
-        # This function is used to set the last page in the session
         self.page.session.set("last_page", "Page2")
         print('did mount page 2')
         self.page.update()
@@ -72,7 +70,7 @@ class Chat(Control):
         # Refresh the page to reflect changes
         self.page.update()
 
-        print("Send button clicked, text:", tes)
+        # print("Send button clicked, text:", tes)
 
     # Design and style the text holder
     def text_holder(self, new_chat=None):
