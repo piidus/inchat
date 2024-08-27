@@ -1,11 +1,17 @@
 import sqlite3
 from sqlite3 import Error
 from datetime import datetime 
-
+import os
 class Database:    
     def __init__(self):
         self.conn = None
-        db_file = "data/inchat.db"
+        try:
+            # Ensure the directory exists
+            path =  os.path.join(os.getcwd(), 'INCHAT')
+            os.makedirs(path, exist_ok=True)
+        except Exception as e:
+            print(f"Error creating directory: {e}")
+        db_file = "INCHAT/inchat.db"
         try:
             self.conn = sqlite3.connect(db_file, check_same_thread=False)  # Allow access from multiple threads
         except Error as e:
