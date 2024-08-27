@@ -75,11 +75,11 @@ jobs:
           echo "Flet build apk failed. Check apk_build.log for details."
           exit 1
         fi
-        flet build aab --build-version ${{ env.BUILD_VERSION }} --build-number ${{ env.BUILD_NUMBER }} --verbose > aab_build.log 2>&1
-        if [ $? -ne 0 ]; then
-          echo "Flet build aab failed. Check aab_build.log for details."
-          exit 1
-        fi
+        # flet build aab --build-version ${{ env.BUILD_VERSION }} --build-number ${{ env.BUILD_NUMBER }} --verbose > aab_build.log 2>&1
+        # if [ $? -ne 0 ]; then
+        #   echo "Flet build aab failed. Check aab_build.log for details."
+        #   exit 1
+        # fi
 
     - name: List All Files in Build Directory
       run: |
@@ -96,13 +96,13 @@ jobs:
           echo "Error: APK file not found at $APK_PATH!"
           exit 1
         fi
-        if [ -f "$AAB_PATH" ]; then
-          echo "AAB file found at $AAB_PATH"
-          echo "AAB_PATH=$AAB_PATH" >> $GITHUB_ENV
-        else
-          echo "Error: AAB file not found at $AAB_PATH!"
-          exit 1
-        fi
+        # if [ -f "$AAB_PATH" ]; then
+        #   echo "AAB file found at $AAB_PATH"
+        #   echo "AAB_PATH=$AAB_PATH" >> $GITHUB_ENV
+        # else
+        #   echo "Error: AAB file not found at $AAB_PATH!"
+        #   exit 1
+        # fi
 
     - name: Upload APK Artifact
       uses: actions/upload-artifact@v4.3.4
@@ -112,10 +112,10 @@ jobs:
         if-no-files-found: error
         overwrite: false
 
-    - name: Upload AAB Artifact
-      uses: actions/upload-artifact@v4.3.4
-      with:
-        name: aab-build-artifact
-        path: ${{ env.AAB_PATH }}
-        if-no-files-found: error
-        overwrite: false
+    # - name: Upload AAB Artifact
+    #   uses: actions/upload-artifact@v4.3.4
+    #   with:
+    #     name: aab-build-artifact
+    #     path: ${{ env.AAB_PATH }}
+    #     if-no-files-found: error
+    #     overwrite: false
