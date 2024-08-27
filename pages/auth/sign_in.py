@@ -11,9 +11,16 @@ class Login(ft.Control):
     def did_mount(self):
         # first check datebase present or not, if not create one
         try:
-            db = Database("data/inchat.db")
-            db.create_table(
-                "CREATE TABLE IF NOT EXISTS chats (id INTEGER PRIMARY KEY, name TEXT, message TEXT, time TEXT)"
+            db = Database()
+            db.create_table(sql=
+                '''
+                CREATE TABLE IF NOT EXISTS chats (
+                    id INTEGER PRIMARY KEY,
+                    name TEXT(30),
+                    message TEXT(150),
+                    time TEXT(30)
+                    );
+                '''
             )
         except Exception as e:
             print(e)

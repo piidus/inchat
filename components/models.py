@@ -1,45 +1,81 @@
 import sqlite3
 from sqlite3 import Error
+from datetime import datetime 
 
-class Database:
-    def __init__(self, db_file):
+class Database:    
+    def __init__(self):
         self.conn = None
+        db_file = "data/inchat.db"
         try:
-            self.conn = sqlite3.connect(db_file)
+            self.conn = sqlite3.connect(db_file, check_same_thread=False)  # Allow access from multiple threads
         except Error as e:
-            print(e)
+            print(f"Connection error: {e}")
 
     def create_table(self, sql):
-        """
-        Creates a table in the database based on the provided SQL query.
+        return self.execute_query(sql)
 
-        Args:
-            sql (str): The SQL query to create the table.
+    def execute_query(self, sql, data=None):
+        try:
+            c = self.conn.cursor()
+            if data:
+                c.execute(sql, data)
+            else:
+                c.execute(sql)
+            
+            self.conn.commit()  # Commit changes to the database
+            return True
+        except Error as e:
+            print(f"Error: {e}")
+            self.conn.rollback()  # Rollback changes on error
+            return False
 
-        Returns:
-            None
-        """
+    def fetch_all(self, sql):
         try:
             c = self.conn.cursor()
             c.execute(sql)
-            self.conn.commit()
-            print("Table created successfully")
-            
-            
+            return c.fetchall()
         except Error as e:
-            print(e)
-        finally:
-            c.close()
+            print(f"Error: {e}")
+            return None
 
-    def insert(self, sql, data):
-        try:
-            c = self.conn.cursor()
-            c.execute(sql, data)
-            self.conn.commit()
-        except Error as e:
-            print(e)
+    def close(self):
+        if self.conn:
+            self.conn.close()
+class ChatHandler(Database):
+    def __init__(self, name='Chat'):
+        super().__init__()
+        self.name = name
+    
+    def __str__(self) -> str:
+        print('Chat handler created')
+    
+    
+    
+    def insert_data(self, message):
+        time = datetime.now().strftime("%H:%M:%S")
+        sql = "INSERT INTO chats (name, message, time) VALUES (?, ?, ?)"
+        return self.execute_query(sql, (self.name, message, time))
+    
+    #query for last 10 messages
+        # Query for the last 10 messages
+    def last_10_messages(self):
+        sql = "SELECT * FROM chats ORDER BY id DESC LIMIT 10"
+        return self.fetch_all(sql)
 
-    def chat_collection(self):
-        c = self.conn.cursor()
-        c.execute("SELECT * FROM chat")
-        return c
+
+# Method to run the database operation in a separate thread
+
+def insert_message_thread(message):
+    chat_handler = ChatHandler()
+    success = chat_handler.insert_data(message)
+    if success:
+        print("Message inserted successfully")
+        return True
+    else:
+        print("Failed to insert message")
+        return False
+
+# def get_last_10_messages():
+    chat_handler = ChatHandler()
+    print("Getting last 10 messages")
+    return list(chat_handler.last_10_messages())
