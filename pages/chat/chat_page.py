@@ -4,18 +4,25 @@ from flet import (Page, Control, Column, Text, TextField,
 from components.models import insert_message_thread, ChatHandler
 
 
-class Chat(Control):    
+class Chat(Control):   
+    '''
+        __init__ : pc for page controller | self.content returns the main content of the page
+        self.size() : it returns the height and width of the container
+        self.did_mount() : sets the last page in the session and updates the page with previous messages
+        self.on_text_change() : a helper function that increases the height of the TextField and ensures the Container holding the TextField also adjusts its height
+        self.input_box() : takes input 
+        self.holder_box() : contain previous messages
+        self.message_designer : returns the message container
+        
+        self.holder_box_controller() : returns the holder box with previous messages
+    '''
+
     def __init__(self, page: Page, pc, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.page = page
         self.pc = pc 
         #supply the main content to page controller
         self.content = self.main_content
-        
-        
-
-
-
     # This function is used to calculate the height and width of the container
     def size(self, height_percent = 100, width_percent = 100):
         height = self.page.height * height_percent / 100
@@ -30,13 +37,14 @@ class Chat(Control):
         # first update with previous messages
         self.holder_box_controller()
         self.page.update()
+    
     def on_text_change(self, e: ControlEvent):
             if "\n" in e.control.value:
                 # Increase the height of the TextField
                 self.__input_field.height += 20  # Increment height
                 # Ensure the Container holding the TextField also adjusts its height
                 e.control.parent.height = self.__input_field.height
-                self.page.update()
+                self.input_box.update()
 
     def input_box(self):
         # Function to handle text changes and check for Enter key
@@ -90,7 +98,7 @@ class Chat(Control):
         
         
         # print("Send button clicked, text:", tes)
-    def holder_box_controller(self):
+    def holder_box_controller(self, no_of_messages = 10):
         print('holder box controller started')
             # Initialize 
         try:
