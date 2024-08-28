@@ -12,5 +12,9 @@ def menu(pc):
                 icon=ft.icons.INFO,
                 on_click=lambda _: pc.navigate_to("Chat")
             ),
+            ft.IconButton(
+                icon=ft.icons.EDIT_ATTRIBUTES_ROUNDED,
+                on_click=lambda _: pc.navigate_to("ChatUpdate")
+            ),
         ]
     )

@@ -2,6 +2,7 @@ import flet as ft
 from controllers.menu import menu
 from pages.auth.sign_in import Login
 from pages.chat.chat_page import Chat
+from pages.chat.chat_page_update import ChatUpdate
 
 class PageControl:
     def __init__(self, page: ft.Page):
@@ -12,6 +13,7 @@ class PageControl:
         self.pages = {
             "Login": Login(self.page, self),
             "Chat": Chat(self.page, self),
+            "ChatUpdate": ChatUpdate(self.page, self)
         }
 
     def load_page(self, page_name: str):
