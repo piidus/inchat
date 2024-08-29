@@ -2,6 +2,8 @@ import sqlite3
 from sqlite3 import Error
 from datetime import datetime 
 import os
+
+
 class Database:    
     def __init__(self):
         self.conn = None
@@ -67,21 +69,16 @@ class ChatHandler(Database):
     def last_10_messages(self):
         sql = "SELECT * FROM chats ORDER BY id DESC LIMIT 10"
         return self.fetch_all(sql)
+    
+    def insert_message_to_db(self, message):
+        
+        success = self.insert_data(message)
+        if success:
+            print("Message inserted successfully")
+            return True
+        else:
+            print("Failed to insert message")
+            return False
 
 
 # Method to run the database operation in a separate thread
-
-def insert_message_thread(message):
-    chat_handler = ChatHandler()
-    success = chat_handler.insert_data(message)
-    if success:
-        print("Message inserted successfully")
-        return True
-    else:
-        print("Failed to insert message")
-        return False
-
-# def get_last_10_messages():
-    chat_handler = ChatHandler()
-    print("Getting last 10 messages")
-    return list(chat_handler.last_10_messages())

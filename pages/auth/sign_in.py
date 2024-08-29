@@ -29,7 +29,6 @@ class Login(ft.Control):
         self.page.update()
 
 
-
     def content(self):
         last_page = self.page.session.get("last_page")
         return ft.Column(

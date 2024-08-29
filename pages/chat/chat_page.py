@@ -1,8 +1,8 @@
 from flet import (Page, Control, Column, Text, TextField, 
-                   Container,colors, border, ScrollMode, Row, 
-                   alignment, BorderRadius, IconButton, icons, ControlEvent)
-from components.models import insert_message_thread, ChatHandler
-
+                   Container,colors, border, ScrollMode, Row, TextButton,
+                   alignment, BorderRadius, IconButton, icons, ControlEvent, AlertDialog)
+from components.models import ChatHandler
+import flet
 
 class Chat(Control):   
     '''
@@ -11,10 +11,10 @@ class Chat(Control):
         self.did_mount() : sets the last page in the session and updates the page with previous messages
         self.on_text_change() : a helper function that increases the height of the TextField and ensures the Container holding the TextField also adjusts its height
         self.input_box() : takes input 
-        self.holder_box() : contain previous messages
-        self.message_designer : returns the message container
-        
-        self.holder_box_controller() : returns the holder box with previous messages
+        self.output_box() : contain all messages
+        self.message_designer : returns the designing message container       
+        self.holder_box_controller() : check incoming or outgoing messages and save data to database, 
+                            and add them to the holder box
     '''
 
     def __init__(self, page: Page, pc, *args, **kwargs):
@@ -35,8 +35,23 @@ class Chat(Control):
         self.page.session.set("last_page", "Page2")
         print('did mount page 2')
         # first update with previous messages
-        self.holder_box_controller()
-        self.page.update()
+        try:
+            chat_handler = ChatHandler()
+            messages = chat_handler.last_10_messages()
+            messages = messages[::-1]       
+            if messages:
+                print('messages not none')
+                # print(messages)
+                for message in messages:
+                    new_chat = message[2]
+                    holder = self.message_designer(new_chat = new_chat)
+                    self.output_column.controls.append(holder)
+                    self.output_column.update()
+                    # print(new_chat)
+        except Exception as e:
+            print(e)
+        
+        # self.page.update()
     
     def on_text_change(self, e: ControlEvent):
             if "\n" in e.control.value:
@@ -88,40 +103,52 @@ class Chat(Control):
     #Will be used to send the message
     def on_send_click(self, e):
        
-        tes = (self.__input_field.value)
-        if tes:
-            insert_message_thread(tes)
-            print("Send button clicked, text:", tes)
-            t = self.holder_box_controller()
+        msg = (self.__input_field.value)
+        if msg:
+            #save the message in the database
+            chat_handler = ChatHandler()
+            chat_handler.insert_data(message=msg)
+            # print("Send button clicked, text:", msg)
+        
+            # add the message to the holder box
+            self.holder_box_controller(message=msg, type="outgoing")
+            self.__input_field.value = ""
         
             
         
         
         # print("Send button clicked, text:", tes)
-    def holder_box_controller(self, no_of_messages = 10):
+    def holder_box_controller(self, message, type):
         print('holder box controller started')
+        if type == "incoming":
+            holder = self.message_designer(new_chat = message, type = type)
+            self.output_column.controls.append(holder)
+            self.output_column.update()
+        elif type == "outgoing":
+            holder = self.message_designer(new_chat = message, type = type)
+            self.output_column.controls.append(holder)
+            self.output_column.update()
             # Initialize 
-        try:
-            chat_handler = ChatHandler()
-            messages = chat_handler.last_10_messages()
-            messages = messages[::-1]       
-            if messages:
-                print('messages not none')
-                # print(messages)
-                for message in messages:
-                    new_chat = message[2]
-                    holder = self.text_holder(new_chat = new_chat)
-                    self.holder_column.controls.append(holder)
-                    self.holder_column.update()
-                    # print(new_chat)
-        except Exception as e:
-            print(e)
+        
         else:
-            self.__input_field.value = ""
-            self.page.update()
+            print("Update Need in holder box controller")
+            #show popup as error
+            alert = AlertDialog(
+                title=Text("Error"),
+                content=Text("Update Need in holder box controller"),
+                actions=[TextButton("OK")], open=True
+            )
+
+            self.page.add(alert)  # Add the alert to the page
+
+            # alert.open = True  # Set the alert to be open
+            alert.update()    # Update the alert (optional)
+
+            print("Update Need in holder box controller")
+
 
     # Design and style the text holder
-    def text_holder(self, new_chat = ""):
+    def message_designer(self, new_chat = "", type = "incoming"):
         '''It Holds the Input as output'''
         # Create a Container to hold the Column
         text_container = Container(
@@ -143,18 +170,21 @@ class Chat(Control):
         )
         return text_container
 
+    
+  
     # It holds the output Box container
-    def holder_box(self):
+    def output_box(self):
         '''This is the container that holds all output as text_holder'''
         box_height, box_width = self.size(height_percent=80)
         
         # Initialize holder_column as a Column
-        self.holder_column = Column(
+        self.output_column = Column(
             controls=[],  # Start with an empty list of controls
             spacing=15,
             scroll=ScrollMode.AUTO,
             auto_scroll=True,
             width=box_width - 30,
+            height=500,
         )
 
         holder = Container(
@@ -162,11 +192,14 @@ class Chat(Control):
             bgcolor=colors.GREEN_100,
             border_radius=10,
             height=box_height,  # Set the height as needed
-            content=self.holder_column,  # Set holder_column as the content of the holder
+            content=self.output_column,  # Set holder_column as the content of the holder
             border=border.all(1, colors.BLACK),
         )
 
         return holder
+    
+    
+
 
     # Main content of the page
     def main_content(self):
@@ -195,7 +228,7 @@ class Chat(Control):
                 content=Column(
                     controls=[
                          # Adding the input box inside the inner container
-                        self.holder_box(),
+                        self.output_box(),
                         self.input_box(), 
                     ],
                     scroll=ScrollMode.AUTO,  # Enable auto-scrolling

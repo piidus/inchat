@@ -1,66 +1,92 @@
-from flet import (Page, Control, Column, Text, TextField, ListView,
-                   Container,colors, border, ScrollMode, Row, OnScrollEvent,
-                   alignment, BorderRadius, IconButton, icons, ControlEvent)
-from components.models import insert_message_thread, ChatHandler
 import flet as ft
-class MyOnScrollEvent(OnScrollEvent):
+import time
+class TextHolderColumn(ft.ListView):
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.scroll_delta =None
-        self.direction= None
-        self.overscroll= None
-        self.velocity= None
+        super().__init__(
+            spacing=kwargs.get('spacing', 10),
+            height=kwargs.get('height', 200),
+            width=kwargs.get('width', 200),
+            # scroll=kwargs.get('scroll', "always"),
+            on_scroll=kwargs.get('on_scroll', None),
+            # auto_scroll=kwargs.get('auto_scroll', True),
+            reverse=kwargs.get('reverse', True),
+            expand=kwargs.get('expand', True),
+            controls=kwargs.get('controls', []),
+            # item_extent=kwargs.get('item_extent', 50),
+        )
 
-
-class ChatUpdate(Control):   
-    '''
-        __init__ : pc for page controller | self.content returns the main content of the page
-        self.size() : it returns the height and width of the container
-        self.did_mount() : sets the last page in the session and updates the page with previous messages
-        self.on_text_change() : a helper function that increases the height of the TextField and ensures the Container holding the TextField also adjusts its height
-        self.input_box() : takes input 
-        self.holder_box() : contain previous messages
-        self.message_designer : returns the message container
-        
-        self.holder_box_controller() : returns the holder box with previous messages
-    '''
-
-    def __init__(self, page: Page, pc, *args, **kwargs):
+class ChatUpdate(ft.Control):
+    def __init__(self, page: ft.Page, pc, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.page = page
-        self.pc = pc 
+        self.pc = pc
+        self.__scroll_position = 0
         self.content()
+
+
+    def did_mount(self):
+        # Run demo to add initial values and scroll to the end
+        self.demo()
+        self.text_holder.update()
+        # time.sleep(1)
+        # self.text_holder.auto_scroll = False
+        # self.text_holder.on_scroll = self.on_column_scroll
+        # self.text_holder.update()
         
-        # self.content = self.main_content
-    # hold one listview and one row horizoltally
+        
+
+        # Scroll to the end after page update
+        # self.text_holder.scroll_to(key=f"{self.__scroll_position}", duration=500)
+        # self.text_holder.on_scroll = self.on_column_scroll
+        # # self.text_holder.update()
+        # # Activate on_scroll and deactivate auto_scroll after the initial setup
+        # # self.text_holder.auto_scroll = False
+        # self.text_holder.on_scroll = None
+        # self.page.update()
+        # time.sleep(1)
+        # self.text_holder.on_scroll = self.on_column_scroll
+        # self.text_holder.scroll_to(delta=0)
+        # self.text_holder.update()
+        
+        
+
     def demo(self):
-        for i in range(25):
-            self.text_holder.controls.append(ft.Text("Hello"+"--"+str(i)))
-            self.page.update()
-    def on_column_scroll(self,e: OnScrollEvent):
-        print(
-            f"Type: {e.event_type}, pixels: {e.pixels}, min_scroll_extent: {e.min_scroll_extent}, max_scroll_extent: {e.max_scroll_extent}"
-        )
-        if e.pixels == e.max_scroll_extent:
+        print('demo run')
+        for i in range(12):
+            self.text_holder.controls.append(ft.Text("Hello" + "--" + str(self.__scroll_position), key=str(self.__scroll_position)))
+            self.__scroll_position += 1
+        print('demo done', len(self.text_holder.controls))
+        # self.text_holder.scroll_to(len(self.text_holder.controls) - 1)
+
+    def on_column_scroll(self, e: ft.OnScrollEvent):
+        print(e.pixels, "on_column_scroll", self.__scroll_position)
+
+        if e.pixels >= e.max_scroll_extent -2:
             self.demo()
+            # self.text_holder.update()
+        self.text_holder.update()
+            
 
     def content(self):
-        self.text_holder = ft.Column(
-            spacing=10,
-            height=200,
-            width=200,
-            scroll="always",            
-            on_scroll=self.on_column_scroll,
-            # auto_scroll=True,
-            
-        )
-        self.demo()
+        self.text_holder = TextHolderColumn(
+                            spacing=10,
+                            height=200,
+                            width=200,
+                            # scroll="auto",
+                            # auto_scroll=True,
+                            expand=True,
+                            # item_extent=50,
+                            on_scroll=self.on_column_scroll,
+                            controls=[],
+                        )
+
         return ft.Column(
             controls=[
                 self.text_holder,
                 ft.Row(
                     controls=[
-                        ft.Text("Row"),
+                        ft.Text("Row", size=20),
+                        ft.ElevatedButton("Chat"),
                     ],
                 ),
             ],
