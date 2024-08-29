@@ -53,7 +53,7 @@ class ChatUpdate(ft.Control):
 
     def on_column_scroll(self, e: MyOnScrollEvent):
         # print(e.pixels, e.max_scroll_extent, "on_column_scroll", self.__scroll_position)
-        # print(type(e.pixels))
+        
         if e.pixels >= e.max_scroll_extent - 130 :
             print("IT CROSSED")
             self.demo()
