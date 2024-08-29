@@ -1,25 +1,10 @@
 import flet as ft
 import time
-class TextHolderColumn(ft.ListView):
-    def __init__(self, *args, **kwargs):
-        super().__init__(
-            spacing=kwargs.get('spacing', 10),
-            height=kwargs.get('height', 200),
-            width=kwargs.get('width', 200),
-            # scroll=kwargs.get('scroll', "always"),
-            on_scroll=kwargs.get('on_scroll', None),
-            # auto_scroll=kwargs.get('auto_scroll', True),
-            reverse=kwargs.get('reverse', True),
-            expand=kwargs.get('expand', True),
-            controls=kwargs.get('controls', []),
-            # item_extent=kwargs.get('item_extent', 50),
-        )
+
 class MyOnScrollEvent(ft.ControlEvent):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.direction = "reverse"
-        # self.event_type = "update"
-        # self.scroll_to = (delta =-5)
     def __str__(self):
         print(self.direction, self.pixels, self.max_scroll_extent, self.scroll_offset)
 
@@ -63,13 +48,15 @@ class ChatUpdate(ft.Control):
 
     def content(self):
         self.text_holder = ft.ListView(
-                            spacing=10,
+                            spacing=20,
                             height=400,
                             width=200,
                             reverse=True,
                             expand=True,
                             on_scroll_interval = 30,
                             on_scroll=self.on_column_scroll,
+                            divider_thickness = 3,
+                            
                             controls=[],
                         )
 
