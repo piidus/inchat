@@ -1,5 +1,8 @@
 import flet as ft
-import time
+from flet import (Page, Control, Column, Text, TextField, 
+                   Container,colors, border, ScrollMode, Row, TextButton,
+                   alignment, BorderRadius, IconButton, icons, ControlEvent, AlertDialog)
+from components.models import ChatHandler
 
 class MyOnScrollEvent(ft.ControlEvent):
     def __init__(self, *args, **kwargs):
@@ -59,15 +62,47 @@ class ChatUpdate(ft.Control):
                             
                             controls=[],
                         )
+    def input_box(self):
+        # Function to handle text changes and check for Enter key
+        box_height, box_width = self.size(height_percent=9)
+        self.__input_field = TextField(
+            hint_text="Type here...",
+            border_color=None,
+            autofocus=True,
+            min_lines=1,  # Allow it to be a single line initially
+            # on_change=self.on_text_change,
+            expand=False,
+        )
+        
+        # Create the input box and send button
+        containt = Row(
+            controls=[
+                Container(
+                    alignment=alignment.center_left,
+                    border_radius=10,
+                    height=box_height,  # Initial height
+                    width=box_width * 0.8,  # Take 80% of the width for the input box
+                    # content=self.__input_field,
+                    expand=True,  # Allow the input box to expand to fill available space
+                ),
+                IconButton(
+                    icon=icons.SEND_AND_ARCHIVE_OUTLINED,
+                    icon_size=24,
+                    on_click=self.on_send_click,
+                ),
+            ],
+            alignment="spaceBetween",  # Ensure the send button is on the right
+        )
+        return containt
+    
+
+   
+     # Retrieve the text from the input box and append it to the holder box
+    
 
         return ft.Column(
             controls=[
                 self.text_holder,
-                ft.Row(
-                    controls=[
-                        ft.Text("Row", size=20),
-                        ft.ElevatedButton("Chat"),
-                    ],
-                ),
+                self.input_box, 
             ],
         )
