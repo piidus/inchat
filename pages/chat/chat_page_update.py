@@ -242,7 +242,7 @@ class ChatUpdate(Control):
         '''This is the container that holds all output as text_holder'''
         self.text_holder = ft.ListView(
                             spacing=20,
-                            height=400,
+                            # height=400,
                             # width=200,
                             reverse=True,
                             expand=True,
