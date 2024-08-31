@@ -45,7 +45,13 @@ class Database:
         except Error as e:
             print(f"Error: {e}")
             return None
-
+    def fetch_selected(self, sql, params):
+        try:
+            c = self.conn.cursor()
+            c.execute(sql, params)
+            return c.fetchall()
+        except Error as e:
+            print(f"Error: {e}")
     def close(self):
         if self.conn:
             self.conn.close()
@@ -69,6 +75,17 @@ class ChatHandler(Database):
     def last_10_messages(self):
         sql = "SELECT * FROM chats ORDER BY id DESC LIMIT 10"
         return self.fetch_all(sql)
+    
+    def get_previous_10_messages(self, index_no):
+        ''' SQL query to fetch the previous 10 messages before the given index'''
+        sql = """
+        SELECT * FROM chats WHERE id < ? ORDER BY id DESC LIMIT 10;
+        """
+        
+        # Fetch the messages starting from the given index
+        messages = self.fetch_selected(sql, params=(index_no,))
+        
+        return messages
     
     def insert_message_to_db(self, message):
         
