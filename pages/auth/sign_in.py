@@ -1,5 +1,5 @@
 import flet as ft
-from components.models import Database
+from components.models import Database, ChatHandler
 import os
 # @memory_test
 class Login(ft.Control):
@@ -29,12 +29,21 @@ class Login(ft.Control):
         self.page.update()
 
 
+    def dummy_50_messages(self,e):
+        try:
+            chat_handler = ChatHandler()
+            for i in range(50):
+                chat_handler.insert_data(message=f" Dummy Message {i}")
+                    # print(new_chat)
+        except Exception as e:
+            print(e)
+
     def content(self):
         last_page = self.page.session.get("last_page")
         return ft.Column(
             controls=[
                 ft.Text("This is Page 1"),
-                ft.ElevatedButton("Chat", on_click=lambda _: self.pc.load_page("Chat")),
+                ft.ElevatedButton("Add Dummy Messages", on_click=self.dummy_50_messages),
                 ft.Text(f"Last Page: {last_page}", selectable=False),
             ]
         )
