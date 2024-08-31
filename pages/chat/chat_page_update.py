@@ -2,7 +2,8 @@ import flet as ft
 from flet import (Page, Control, Column, Text, TextField, 
                    Container,colors, border, ScrollMode, Row, TextButton,
                    alignment, BorderRadius, IconButton, icons, ControlEvent, AlertDialog)
-from components.models import ChatHandler
+from threading import Semaphore
+from components.models import ChatHandler, AsyncChatHandler
 '''
     __init__ : pc for page controller | self.content returns the main content of the page
     self.size() : it returns the height and width of the container
@@ -14,17 +15,19 @@ from components.models import ChatHandler
     self.holder_box_controller() : check incoming or outgoing messages and save data to database, 
                         and add them to the holder box
 '''
-class MyOnScrollEvent(ft.UserControl): #OnScrollEvent
+class MyOnScrollEvent(ft.OnScrollEvent): #OnScrollEvent
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # self.direction = "reverse"
-        # self.event_type = 'user' #'update'
+        
     def __str__(self):
         print(self.direction, self.pixels, self.max_scroll_extent, self.scroll_offset)
 
     def build(self):
         
         return MyOnScrollEvent
+# sem = Semaphore()
+        
+
 
 class ChatUpdate(Control):
     def __init__(self, page: ft.Page, pc, *args, **kwargs):
@@ -33,6 +36,7 @@ class ChatUpdate(Control):
         self.pc = pc
         self.__message_id = 0
         self.content = self.main_content
+        self.sem = Semaphore(1) # Semaphore
         
 
     
@@ -42,11 +46,7 @@ class ChatUpdate(Control):
         height = self.page.height * height_percent / 100
         width = self.page.window.width * width_percent / 100
         return height, width
-    def did_mount(self):
-        # Run demo to add initial values and scroll to the end
-        # self.demo()
-        # self.text_holder.update()
-       
+    def did_mount(self):  
         try:
             chat_handler = ChatHandler()
             messages = chat_handler.last_10_messages()
@@ -56,7 +56,7 @@ class ChatUpdate(Control):
                 # print(messages)
                 for message in messages:
                     message_id = message[0]
-                    new_chat = message[2] + "\n" + str(message_id)
+                    new_chat = message[2]  + str(message_id)
                     holder = self.message_designer(new_chat = new_chat)
                     self.text_holder.controls.append(holder)
                     self.text_holder.update()
@@ -93,85 +93,49 @@ class ChatUpdate(Control):
         except Exception as e:
             print('CHAT FLOW ERROR',e)
        
-    def on_column_scroll(self, e: MyOnScrollEvent):
-        # Check if the user has scrolled near the bottom (within 30 pixels)
-        if e.pixels >= e.max_scroll_extent - 30:
-            print("[on_column_scroll]", e.pixels, e.max_scroll_extent)
-            
-            # Calculate the new scroll position with the specified delta
-            new_scroll_position = e.max_scroll_extent - 30
-            
-            # Scroll to the new position (assuming scroll_to is synchronous)
-            self.text_holder.scroll_to(new_scroll_position, duration=0)
-            
-            try:
-                # Fetch the last message ID from the controller
-                last_index = self.chat_flow_controller(no_of_messages=1)
-                print(['MESSAGE ID'], last_index)
-                
-                chat_handler = ChatHandler()
-                # database = Database()
-                
-                # Check if there is a valid last message ID
-                if last_index > 0:
-                    # Retrieve the previous 10 messages asynchronously
-                    messages =  chat_handler.only_last_one_message(index_no=last_index)
-                    
-                    if messages:
-                        # print('[MESSAGES]', messages)
-                        
-                        # Append each retrieved message to the chat display
-                        # for message in messages:
-                        #     new_chat = message[2] + "\n" + str(message[0])
-                        holder = self.message_designer(new_chat=messages[0][2] + "\n" + str(messages[0][0]))
-                        self.text_holder.controls.append(holder)
-                        
-                        # Update the message display after all messages are added
-                        self.text_holder.update()
-                        print(['UPDATED MESSAGE ID'], self.__message_id)
-                    else:
-                        # If no more messages are available, disable further scroll handling
-                        self.text_holder.on_scroll = None
-            except Exception as e:
-                print(['MESSAGE ERROR'], self.__message_id, e)
+    async def on_column_scroll(self, e: MyOnScrollEvent):
+        # Check if the user has scrolled near the bottom (within 100 pixels)
+        if e.pixels >= e.max_scroll_extent - 100:
+            print("[on_column_scroll]")
 
-    # async def on_column_scroll(self, e: MyOnScrollEvent):
-        
-    #     # print(e)
-    #     if e.pixels >= e.max_scroll_extent - 30:
-    #         print("[on_column_scroll]",e.pixels, e.max_scroll_extent)
-    #         # Calculate the new scroll position with the specified delta
-    #         new_scroll_position = e.pixels - 30
-            
-    #         # Scroll to the new position
-    #         self.text_holder.scroll_to(new_scroll_position, duration=0)
-    #         # Move the scrollbar back to the new position
-    #         # self.text_holder.scroll_to(delta=0, duration=0)  # Scrolls to the last added message instantly
-    #         # print(type(self.__message_id))
-    #         try:
-    #             last_message = self.chat_flow_controller(no_of_messages=10)
-    #             print(['MESSAGE ID'], last_message)
-                
-    #             chat_handler = ChatHandler()
-    #             if last_message > 0:
-    #                 messages = await chat_handler.get_previous_10_messages(index_no=last_message)
-    #                 if messages:
-    #                     print('[MESSAGES]', messages)
-    #                     for message in messages:
-    #                         new_chat = message[2]+"\n"+str(message[0])
-    #                         holder = self.message_designer(new_chat = new_chat)
-    #                         self.text_holder.controls.append(holder)
-    #                         self.text_holder.update()
-    #                         # print(new_chat)
-    #                     print(['UPDATED MESSAGE ID'], self.__message_id)
-    #             else:
-    #                 self.text_holder.on_scroll = None # clear on scroll.
-    #         except Exception as e:
-    #             print(['MESSAGE ERROR'], self.__message_id,e)
-    #         else:
-    #             # self.__message_id = messages[-1][0]
-    #             # print('MESSAGE UPDATED')
-    #             self.text_holder.update()
+            # Attempt to acquire the semaphore
+            if self.sem.acquire(blocking=False):  # Non-blocking acquire
+                try:
+                    chat_handler = AsyncChatHandler()
+                    
+                    # Fetch the last message ID from the controller
+                    last_index = self.chat_flow_controller(no_of_messages=10)
+                    if last_index == -1:
+                        print('[it reached the top]')
+                        self.text_holder.on_scroll = None
+                    else:
+                        print(['RUN CHAT FLOW'], last_index)
+                        
+                        # Retrieve the previous 10 messages asynchronously
+                        messages = await chat_handler.get_previous_10_messages(index_no=last_index)
+                        
+                        if messages:
+                            # Append each retrieved message to the chat display
+                            for message in messages:
+                                new_chat = message[2] + str(message[0])
+                                holder = self.message_designer(new_chat=new_chat)
+                                self.text_holder.controls.append(holder)
+                            
+                            # Update the message display after all messages are added
+                            self.text_holder.update()
+                            print(['UPDATED MESSAGE ID'], self.__message_id)
+                        else:
+                            # If no more messages are available, disable further scroll handling
+                            self.text_holder.on_scroll = None
+                except Exception as e:
+                    print(['MESSAGE ERROR'], self.__message_id, e)
+                finally:
+                    # Release the semaphore
+                    self.sem.release()
+            else:
+                print("Scroll event ignored due to ongoing process.")
+
+    
        
     def holder_box_controller(self, message, type):
         # print('holder box controller started')
@@ -282,7 +246,7 @@ class ChatUpdate(Control):
                             # width=200,
                             reverse=True,
                             expand=True,
-                            on_scroll_interval = 10,
+                            on_scroll_interval = 50,
                             on_scroll=self.on_column_scroll,
                             divider_thickness = 1,
                             

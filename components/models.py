@@ -111,26 +111,68 @@ class ChatHandler(Database):
         query = "SELECT * FROM chats WHERE id < ? ORDER BY id DESC LIMIT 1"
         
         return self.fetch_selected_one(query, (index_no,))
-    # async def get_previous_1_message(self, index_no):
-    #     """
-    #     Asynchronously retrieves the previous message before the given index_no.
-    #     :param index_no: The index or ID of the last known message.
-    #     :return: A single message or None if no more messages are found.
-    #     """
-    #     # Simulate asynchronous I/O operation, such as a database query
-    #     # await asyncio.sleep(0.1)  # Simulating an I/O-bound operation
+import asyncio
+from threading import Thread, Lock
 
-    #     # Example query (you would replace this with your actual database query)
-    #     query = "SELECT id, content, timestamp FROM messages WHERE id < ? ORDER BY id DESC LIMIT 1"
-        
-    #     # Assuming you have a method to execute this query and fetch the result
-    #     # The example below assumes an SQLite-like database connection
-    #     message = await  self.fetch_selected(query, (index_no,)) 
+class AsyncDatabaseHandler:
+    def __init__(self):
+        self.conn = None
+        self.lock = Lock()  # Lock for thread safety
 
-        
-    #     return message  # Returns the fetched message, or None if no message found
-# Method to run the database operation in a separate thread
+        try:
+            # Ensure the directory exists
+            path = os.path.join(os.getcwd(), 'INCHAT')
+            os.makedirs(path, exist_ok=True)
+        except Exception as e:
+            print(f"Error creating directory: {e}")
 
+        db_file = "INCHAT/inchat.db"
+        try:
+            self.conn = sqlite3.connect(db_file, check_same_thread=False)  # Allow access from multiple threads
+        except sqlite3.Error as e:
+            print(f"Connection error: {e}")
+
+    def execute_query(self, sql, data=None):
+        def task():
+            with self.lock:
+                try:
+                    cursor = self.conn.cursor()
+                    if data:
+                        cursor.execute(sql, data)
+                    else:
+                        cursor.execute(sql)
+                    self.conn.commit()
+                except sqlite3.Error as e:
+                    print(f"Error: {e}")
+                    self.conn.rollback()
+
+        thread = Thread(target=task)
+        thread.start()
+        thread.join()  # Wait for the thread to finish
+
+    def fetch_query(self, sql, data=None):
+        def task():
+            with self.lock:
+                cursor = self.conn.cursor()
+                if data:
+                    cursor.execute(sql, data)
+                else:
+                    cursor.execute(sql)
+                result = cursor.fetchall()
+            return result
+
+        loop = asyncio.get_event_loop()
+        future = loop.run_in_executor(None, task)
+        return future
+
+class AsyncChatHandler:
+    def __init__(self):
+        self.db = AsyncDatabaseHandler()
+
+    def get_previous_10_messages(self, index_no):
+        sql = "SELECT * FROM chats WHERE id < ? ORDER BY id DESC LIMIT 10"
+        return self.db.fetch_query(sql, (index_no,))
+    
 if __name__ == "__main__":
     chat = ChatHandler()
     print(chat.only_last_one_message(index_no=7))
