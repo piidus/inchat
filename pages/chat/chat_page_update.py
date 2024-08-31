@@ -97,6 +97,8 @@ class ChatUpdate(Control):
         # print(e.pixels, e.max_scroll_extent, "on_column_scroll")
         # print(e)
         if e.pixels == e.max_scroll_extent :
+            # Move the scrollbar back to the new position
+            self.text_holder.scroll_to(self.text_holder.controls[-1], duration=0)  # Scrolls to the last added message instantly
             print(type(self.__message_id))
             try:
                 last_message = self.chat_flow_controller(no_of_messages=10)
