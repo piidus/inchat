@@ -52,6 +52,14 @@ class Database:
             return c.fetchall()
         except Error as e:
             print(f"Error: {e}")
+    
+    def fetch_selected_one(self, sql, params):
+        try:
+            c = self.conn.cursor()
+            c.execute(sql, params)
+            return c.fetchone()
+        except Error as e:
+            print(f"Error: {e}")
     def close(self):
         if self.conn:
             self.conn.close()
@@ -87,6 +95,7 @@ class ChatHandler(Database):
         
         return messages
     
+    
     def insert_message_to_db(self, message):
         
         success = self.insert_data(message)
@@ -98,4 +107,30 @@ class ChatHandler(Database):
             return False
 
 
+    def only_last_one_message(self, index_no):
+        query = "SELECT * FROM chats WHERE id < ? ORDER BY id DESC LIMIT 1"
+        
+        return self.fetch_selected_one(query, (index_no,))
+    # async def get_previous_1_message(self, index_no):
+    #     """
+    #     Asynchronously retrieves the previous message before the given index_no.
+    #     :param index_no: The index or ID of the last known message.
+    #     :return: A single message or None if no more messages are found.
+    #     """
+    #     # Simulate asynchronous I/O operation, such as a database query
+    #     # await asyncio.sleep(0.1)  # Simulating an I/O-bound operation
+
+    #     # Example query (you would replace this with your actual database query)
+    #     query = "SELECT id, content, timestamp FROM messages WHERE id < ? ORDER BY id DESC LIMIT 1"
+        
+    #     # Assuming you have a method to execute this query and fetch the result
+    #     # The example below assumes an SQLite-like database connection
+    #     message = await  self.fetch_selected(query, (index_no,)) 
+
+        
+    #     return message  # Returns the fetched message, or None if no message found
 # Method to run the database operation in a separate thread
+
+if __name__ == "__main__":
+    chat = ChatHandler()
+    print(chat.only_last_one_message(index_no=7))

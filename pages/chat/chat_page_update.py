@@ -14,11 +14,11 @@ from components.models import ChatHandler
     self.holder_box_controller() : check incoming or outgoing messages and save data to database, 
                         and add them to the holder box
 '''
-class MyOnScrollEvent(ft.OnScrollEvent):
+class MyOnScrollEvent(ft.UserControl): #OnScrollEvent
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # self.direction = "reverse"
-        self.event_type = 'update'
+        # self.event_type = 'user' #'update'
     def __str__(self):
         print(self.direction, self.pixels, self.max_scroll_extent, self.scroll_offset)
 
@@ -93,43 +93,85 @@ class ChatUpdate(Control):
         except Exception as e:
             print('CHAT FLOW ERROR',e)
        
-    
-    async def on_column_scroll(self, e: MyOnScrollEvent):
-        
-        # print(e)
+    def on_column_scroll(self, e: MyOnScrollEvent):
+        # Check if the user has scrolled near the bottom (within 30 pixels)
         if e.pixels >= e.max_scroll_extent - 30:
-            print("[on_column_scroll]",e.pixels, e.max_scroll_extent)
-            # Calculate the new scroll position with the specified delta
-            new_scroll_position = e.pixels - 30
+            print("[on_column_scroll]", e.pixels, e.max_scroll_extent)
             
-            # Scroll to the new position
+            # Calculate the new scroll position with the specified delta
+            new_scroll_position = e.max_scroll_extent - 30
+            
+            # Scroll to the new position (assuming scroll_to is synchronous)
             self.text_holder.scroll_to(new_scroll_position, duration=0)
-            # Move the scrollbar back to the new position
-            # self.text_holder.scroll_to(delta=0, duration=0)  # Scrolls to the last added message instantly
-            # print(type(self.__message_id))
+            
             try:
-                last_message = self.chat_flow_controller(no_of_messages=10)
-                print(['MESSAGE ID'], last_message)
+                # Fetch the last message ID from the controller
+                last_index = self.chat_flow_controller(no_of_messages=1)
+                print(['MESSAGE ID'], last_index)
                 
                 chat_handler = ChatHandler()
-                if last_message > 0:
-                    messages = await chat_handler.get_previous_10_messages(index_no=last_message)
+                # database = Database()
+                
+                # Check if there is a valid last message ID
+                if last_index > 0:
+                    # Retrieve the previous 10 messages asynchronously
+                    messages =  chat_handler.only_last_one_message(index_no=last_index)
+                    
                     if messages:
-                        for message in messages:
-                            new_chat = message[2]+"\n"+str(message[0])
-                            holder = self.message_designer(new_chat = new_chat)
-                            self.text_holder.controls.append(holder)
-                            self.text_holder.update()
-                            # print(new_chat)
+                        # print('[MESSAGES]', messages)
+                        
+                        # Append each retrieved message to the chat display
+                        # for message in messages:
+                        #     new_chat = message[2] + "\n" + str(message[0])
+                        holder = self.message_designer(new_chat=messages[0][2] + "\n" + str(messages[0][0]))
+                        self.text_holder.controls.append(holder)
+                        
+                        # Update the message display after all messages are added
+                        self.text_holder.update()
                         print(['UPDATED MESSAGE ID'], self.__message_id)
-                else:
-                    self.text_holder.on_scroll = None # clear on scroll.
+                    else:
+                        # If no more messages are available, disable further scroll handling
+                        self.text_holder.on_scroll = None
             except Exception as e:
-                print(['MESSAGE ERROR'], self.__message_id,e)
-            else:
-                # self.__message_id = messages[-1][0]
-                # print('MESSAGE UPDATED')
-                self.text_holder.update()
+                print(['MESSAGE ERROR'], self.__message_id, e)
+
+    # async def on_column_scroll(self, e: MyOnScrollEvent):
+        
+    #     # print(e)
+    #     if e.pixels >= e.max_scroll_extent - 30:
+    #         print("[on_column_scroll]",e.pixels, e.max_scroll_extent)
+    #         # Calculate the new scroll position with the specified delta
+    #         new_scroll_position = e.pixels - 30
+            
+    #         # Scroll to the new position
+    #         self.text_holder.scroll_to(new_scroll_position, duration=0)
+    #         # Move the scrollbar back to the new position
+    #         # self.text_holder.scroll_to(delta=0, duration=0)  # Scrolls to the last added message instantly
+    #         # print(type(self.__message_id))
+    #         try:
+    #             last_message = self.chat_flow_controller(no_of_messages=10)
+    #             print(['MESSAGE ID'], last_message)
+                
+    #             chat_handler = ChatHandler()
+    #             if last_message > 0:
+    #                 messages = await chat_handler.get_previous_10_messages(index_no=last_message)
+    #                 if messages:
+    #                     print('[MESSAGES]', messages)
+    #                     for message in messages:
+    #                         new_chat = message[2]+"\n"+str(message[0])
+    #                         holder = self.message_designer(new_chat = new_chat)
+    #                         self.text_holder.controls.append(holder)
+    #                         self.text_holder.update()
+    #                         # print(new_chat)
+    #                     print(['UPDATED MESSAGE ID'], self.__message_id)
+    #             else:
+    #                 self.text_holder.on_scroll = None # clear on scroll.
+    #         except Exception as e:
+    #             print(['MESSAGE ERROR'], self.__message_id,e)
+    #         else:
+    #             # self.__message_id = messages[-1][0]
+    #             # print('MESSAGE UPDATED')
+    #             self.text_holder.update()
        
     def holder_box_controller(self, message, type):
         # print('holder box controller started')
@@ -236,11 +278,11 @@ class ChatUpdate(Control):
         '''This is the container that holds all output as text_holder'''
         self.text_holder = ft.ListView(
                             spacing=20,
-                            # height=400,
+                            height=400,
                             # width=200,
                             reverse=True,
                             expand=True,
-                            on_scroll_interval = 300,
+                            on_scroll_interval = 10,
                             on_scroll=self.on_column_scroll,
                             divider_thickness = 1,
                             
