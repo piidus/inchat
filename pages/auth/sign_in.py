@@ -55,5 +55,6 @@ class Login(ft.Control):
                 ft.Text("This is Page 1"),
                 ft.ElevatedButton("Add Dummy Messages", on_click=self.dummy_50_messages),
                 ft.Text(f"Last Page: {last_page}", selectable=False),
+                ft.ElevatedButton("Go to Page 2", on_click=lambda _: self.pc.navigate_to("Ada")),
             ]
         )

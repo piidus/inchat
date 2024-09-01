@@ -26,22 +26,22 @@ class Chat(Control):
         self.content = self.main_content
         
         # self.page.window_maximizable = True
-        self.page.window_resizable = True
-        self.page.on_keyboard_event = self.keyboard_event
+        # self.page.window_resizable = True
+        # self.page.on_keyboard_event = self.keyboard_event
 
-    def keyboard_event(self, e: KeyboardEvent):
-        if e.key :
-            self.page.window_minimizable = True
-            # Adjust layout or TextField height
-            print("keyboard_show")
-            self.page.update()
-        elif e.key == "":
-            self.page.window_maximizable = True
-            # self.page.window_maximized = True
-            # Revert layout or TextField height
-            self.page.update()
-        else:
-            print(e.__dict__)
+    # def keyboard_event(self, e: KeyboardEvent):
+    #     if e.key :
+    #         self.page.window_minimizable = True
+    #         # Adjust layout or TextField height
+    #         print("keyboard_show")
+    #         self.page.update()
+    #     elif e.key == "":
+    #         self.page.window_maximizable = True
+    #         # self.page.window_maximized = True
+    #         # Revert layout or TextField height
+    #         self.page.update()
+    #     else:
+    #         print(e.__dict__)
 
         
 

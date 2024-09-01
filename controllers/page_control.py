@@ -3,7 +3,7 @@ from controllers.menu import menu
 from pages.auth.sign_in import Login
 from pages.chat.chat_page import Chat
 from pages.chat.chat_page_update import ChatUpdate
-
+from pages.etc1.ada import Ada
 class PageControl:
     def __init__(self, page: ft.Page):
         self.page = page
@@ -13,7 +13,8 @@ class PageControl:
         self.pages = {
             "Login": Login(self.page, self),
             "Chat": Chat(self.page, self),
-            "ChatUpdate": ChatUpdate(self.page, self)
+            "ChatUpdate": ChatUpdate(self.page, self),
+            'Ada':Ada(self.page, self)
         }
 
     def load_page(self, page_name: str):
