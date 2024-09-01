@@ -1,4 +1,4 @@
-from flet import (Page, Control, Column, Text, TextField, 
+from flet import (Page, Control, Column, Text, TextField, KeyboardEvent,
                    Container,colors, border,  Row, TextButton,
                    alignment, BorderRadius, IconButton, icons, ListView, AlertDialog)
 from components.models import ChatHandler
@@ -24,7 +24,24 @@ class Chat(Control):
         self.pc = pc
         self.__message_id = 0
         self.content = self.main_content
-       
+        
+        # self.page.window_maximizable = True
+        self.page.window_resizable = True
+        self.page.on_keyboard_event = self.keyboard_event
+
+    def keyboard_event(self, e: KeyboardEvent):
+        if e.key :
+            # self.page.window_minimized = True
+            # Adjust layout or TextField height
+            print("keyboard_show")
+            self.page.update()
+        elif e.key == "":
+            # self.page.window_maximized = True
+            # Revert layout or TextField height
+            self.page.update()
+        else:
+            print(e.__dict__)
+
         
 
     
