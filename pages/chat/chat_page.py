@@ -1,8 +1,8 @@
 from flet import (Page, Control, Column, Text, TextField, 
-                   Container,colors, border, ScrollMode, Row, TextButton,
-                   alignment, BorderRadius, IconButton, icons, ControlEvent, AlertDialog)
+                   Container,colors, border,  Row, TextButton,
+                   alignment, BorderRadius, IconButton, icons, ListView, AlertDialog)
 from components.models import ChatHandler
-import flet
+import time
 
 class Chat(Control):   
     '''
@@ -17,91 +17,107 @@ class Chat(Control):
                             and add them to the holder box
     '''
 
+   
     def __init__(self, page: Page, pc, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.page = page
-        self.pc = pc 
-        #supply the main content to page controller
+        self.pc = pc
+        self.__message_id = 0
         self.content = self.main_content
-    # This function is used to calculate the height and width of the container
+       
+        
+
+    
+
     def size(self, height_percent = 100, width_percent = 100):
+        '''return height, weight'''
         height = self.page.height * height_percent / 100
-        width = self.page.width * width_percent / 100
+        width = self.page.window.width * width_percent / 100
         return height, width
-    
-    
-    # This function is used to set the last page in the session
     def did_mount(self):
-        self.page.session.set("last_page", "Page2")
-        print('did mount page 2')
-        # first update with previous messages
+          
         try:
+            start_time = time.time()
             chat_handler = ChatHandler()
-            messages = chat_handler.last_10_messages()
-            messages = messages[::-1]       
+            messages = chat_handler.all_chats()
+            # messages = messages[::-1]       
             if messages:
                 print('messages not none')
                 # print(messages)
                 for message in messages:
-                    new_chat = message[2]
+                    message_id = message[0]
+                    new_chat = message[2]  + str(message_id)
                     holder = self.message_designer(new_chat = new_chat)
-                    self.output_column.controls.append(holder)
-                    self.output_column.update()
+                    self.text_holder.controls.append(holder)
+                    self.__message_id += 1
+                self.text_holder.update()
+            end_time = time.time()
+            print(f"Execution time: {end_time - start_time} seconds, {self.__message_id} messages")
                     # print(new_chat)
         except Exception as e:
             print(e)
+       
         
-        # self.page.update()
-    
-    def on_text_change(self, e: ControlEvent):
-            if "\n" in e.control.value:
-                # Increase the height of the TextField
-                self.__input_field.height += 20  # Increment height
-                # Ensure the Container holding the TextField also adjusts its height
-                e.control.parent.height = self.__input_field.height
-                self.input_box.update()
-
-    def input_box(self):
-        # Function to handle text changes and check for Enter key
-        box_height, box_width = self.size(height_percent=9)
-        self.__input_field = TextField(
-            hint_text="Type here...",
-            border_color=None,
-            autofocus=True,
-            min_lines=1,  # Allow it to be a single line initially
-            on_change=self.on_text_change,
-            expand=False,
-        )
         
-        # Create the input box and send button
-        containt = Row(
-            controls=[
-                Container(
-                    alignment=alignment.center_left,
-                    border_radius=10,
-                    height=box_height,  # Initial height
-                    width=box_width * 0.8,  # Take 80% of the width for the input box
-                    content=self.__input_field,
-                    expand=True,  # Allow the input box to expand to fill available space
-                ),
-                IconButton(
-                    icon=icons.SEND_AND_ARCHIVE_OUTLINED,
-                    icon_size=24,
-                    on_click=self.on_send_click,
-                ),
-            ],
-            alignment="spaceBetween",  # Ensure the send button is on the right
-        )
-        return containt
-    
+        
+    def chat_flow_controller(self, no_of_messages:int)->int:
+        '''it takes how many no of chat need then 
+            it set self.__message_id - no and
+            it returns the last message id'''
+        try:
+            if self.__message_id == 0:
+                return -1
+            elif self.__message_id  < no_of_messages:
+                '''messase are less than no of messages, so set message id to 0 
+                and return no of messages as last message id'''
+                self.__message_id = 0
+                return no_of_messages
+            elif self.__message_id >= no_of_messages:
+                '''message are more than no of messages, so set message id to message id - no of messages
+                and return message id as last message id'''
+                last_index = self.__message_id
+                self.__message_id -= no_of_messages # set message id
+                return last_index
 
+            else:
+                print('ERROR IN CHAT FLOW CONTROLLER')
+        except Exception as e:
+            print('CHAT FLOW ERROR',e)
+       
    
-     # Retrieve the text from the input box and append it to the holder box
-    
+       
+    def holder_box_controller(self, message, type):
+        # print('holder box controller started')
+        if type == "incoming":
+            holder = self.message_designer(new_chat = message, type = type)
+            self.text_holder.controls.insert(0, holder)
+            self.text_holder.update()
+            
+        elif type == "outgoing":
+            holder = self.message_designer(new_chat = message, type = type)
+            self.text_holder.controls.insert(0, holder)
+            self.text_holder.update()
+            # Initialize 
+        
+        else:
+            # print("Update Need in holder box controller")
+            #show popup as error
+            alert = AlertDialog(
+                title=Text("Error"),
+                content=Text("Update Need in holder box controller"),
+                actions=[TextButton("OK")], open=True
+            )
 
-    #insert the message in the database
+            self.page.add(alert)  # Add the alert to the page
+
+            
+            alert.update()    # Update the alert (optional)
+
+            # print("Update Need in holder box controller")
+    
+   #insert the message in the database
     #Will be used to send the message
-    def on_send_click(self, e):
+    def input_box_send(self, e):
        
         msg = (self.__input_field.value)
         if msg:
@@ -113,40 +129,9 @@ class Chat(Control):
             # add the message to the holder box
             self.holder_box_controller(message=msg, type="outgoing")
             self.__input_field.value = ""
-        
+            self.__input_field.update()
             
-        
-        
-        # print("Send button clicked, text:", tes)
-    def holder_box_controller(self, message, type):
-        print('holder box controller started')
-        if type == "incoming":
-            holder = self.message_designer(new_chat = message, type = type)
-            self.output_column.controls.append(holder)
-            self.output_column.update()
-        elif type == "outgoing":
-            holder = self.message_designer(new_chat = message, type = type)
-            self.output_column.controls.append(holder)
-            self.output_column.update()
-            # Initialize 
-        
-        else:
-            print("Update Need in holder box controller")
-            #show popup as error
-            alert = AlertDialog(
-                title=Text("Error"),
-                content=Text("Update Need in holder box controller"),
-                actions=[TextButton("OK")], open=True
-            )
-
-            self.page.add(alert)  # Add the alert to the page
-
-            # alert.open = True  # Set the alert to be open
-            alert.update()    # Update the alert (optional)
-
-            print("Update Need in holder box controller")
-
-
+    
     # Design and style the text holder
     def message_designer(self, new_chat = "", type = "incoming"):
         '''It Holds the Input as output'''
@@ -154,7 +139,7 @@ class Chat(Control):
         text_container = Container(
             bgcolor=colors.GREY_300,
             # width=150,
-            width=self.page.width - 30,
+            # width=self.page.width - 30,
             content= Column(
                     controls=[                
                             Text(new_chat, text_align='right', size=25, 
@@ -169,73 +154,66 @@ class Chat(Control):
             border_radius= BorderRadius(top_left=10, bottom_right=10, bottom_left=0, top_right=0),
         )
         return text_container
-
+   
+    def input_box(self):
+        # Function to handle text changes and check for Enter key
+        box_height, box_width = self.size()
+        # print(box_height, box_width, "box_height, box_width")
+        self.__input_field = TextField(
+                    hint_text="Type here...",
+                    border_color=None,
+                    autofocus=True,
+                    width=box_width * 0.75,  # Allow it to be a single line initially
+                    # height=ft.AUTO,
+                    multiline=True,
+                    max_lines=5,
+                    # on_change=self.on_text_change,
+                    expand=False,
+                )
+        icon_button = Container(
+            content=IconButton(
+                    icon=icons.SEND_AND_ARCHIVE_OUTLINED,
+                    icon_size=24,
+                    on_click=self.input_box_send,
+                ),
+        )
+        # Create the input box and send button
+        total_containt = Row(
+            controls=[
+                self.__input_field,
+                icon_button,
+                ],
+                alignment="spaceBetween",  # Ensure the send button is on the right
+            )
+        return total_containt
     
-  
-    # It holds the output Box container
     def output_box(self):
         '''This is the container that holds all output as text_holder'''
-        box_height, box_width = self.size(height_percent=80)
-        
-        # Initialize holder_column as a Column
-        self.output_column = Column(
-            controls=[],  # Start with an empty list of controls
-            spacing=15,
-            scroll=ScrollMode.AUTO,
-            auto_scroll=True,
-            width=box_width - 30,
-            height=500,
-        )
+        self.text_holder = ListView(
+                            spacing=20,
+                            # height=400,
+                            # width=200,
+                            reverse=True,
+                            expand=True,
+                            on_scroll_interval = 50,
+                            # on_scroll=self.on_column_scroll,
+                            divider_thickness = 1,
+                            
+                            controls=[],
+                    )
 
-        holder = Container(
-            alignment=alignment.bottom_center,
-            bgcolor=colors.GREEN_100,
-            border_radius=10,
-            height=box_height,  # Set the height as needed
-            content=self.output_column,  # Set holder_column as the content of the holder
-            border=border.all(1, colors.BLACK),
-        )
+        return self.text_holder
 
-        return holder
-    
-    
-
-
-    # Main content of the page
+     # Retrieve the text from the input box and append it to the holder box
     def main_content(self):
-        """
-        Returns the main content of the page, including a container with a column of controls.
-        
-        The container has a white background, a black border, and a bottom-center alignment.
-        
-        The column of controls includes a holder box and an input box.
-        
-        :return: A Column control containing the main content of the page.
-        """
-
-        last_page = self.page.session.get("last_page")
-        container_h, container_w = self.size(height_percent=85)  # Getting the container size
-
-        return Column(     
-        controls=[       
-            Container(
-                alignment=alignment.bottom_center,
-                bgcolor=colors.WHITE38, 
-                border_radius=10,
-                border=border.all(1, colors.BLACK), 
-                height=container_h, 
-                width=container_w,
-                content=Column(
-                    controls=[
-                         # Adding the input box inside the inner container
-                        self.output_box(),
-                        self.input_box(), 
-                    ],
-                    scroll=ScrollMode.AUTO,  # Enable auto-scrolling
-                )
-            ),
-            # Text("This is Page 2"),
-            # ElevatedButton("Go to Page 1", on_click=lambda _: self.pc.load_page("Login")),
-            # Text(f"Last Page: {last_page}", selectable=False),
-        ]
-    )
+        height, width = self.size()
+        # print(height, width, "height, width")
+        return Container(
+            height=height-100,
+            content=Column(
+                controls=[
+                    self.output_box(),
+                    self.input_box(), 
+                ],
+            )
+        )

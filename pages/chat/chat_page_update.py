@@ -2,8 +2,9 @@ import flet as ft
 from flet import (Page, Control, Column, Text, TextField, 
                    Container,colors, border, ScrollMode, Row, TextButton,
                    alignment, BorderRadius, IconButton, icons, ControlEvent, AlertDialog)
-from threading import Semaphore
-from components.models import ChatHandler#, AsyncChatHandler
+
+import time
+from components.models import ChatHandler
 '''
     __init__ : pc for page controller | self.content returns the main content of the page
     self.size() : it returns the height and width of the container
@@ -36,7 +37,7 @@ class ChatUpdate(Control):
         self.pc = pc
         self.__message_id = 0
         self.content = self.main_content
-        self.sem = Semaphore(1) # Semaphore
+       
         
 
     
@@ -46,10 +47,12 @@ class ChatUpdate(Control):
         height = self.page.height * height_percent / 100
         width = self.page.window.width * width_percent / 100
         return height, width
-    def did_mount(self):  
+    def did_mount(self):
+          
         try:
+            start_time = time.time()
             chat_handler = ChatHandler()
-            messages = chat_handler.last_10_messages()
+            messages = chat_handler.all_chats()
             # messages = messages[::-1]       
             if messages:
                 print('messages not none')
@@ -59,13 +62,14 @@ class ChatUpdate(Control):
                     new_chat = message[2]  + str(message_id)
                     holder = self.message_designer(new_chat = new_chat)
                     self.text_holder.controls.append(holder)
-                    self.text_holder.update()
+                    self.__message_id += 1
+                self.text_holder.update()
+            end_time = time.time()
+            print(f"Execution time: {end_time - start_time} seconds, {self.__message_id} messages")
                     # print(new_chat)
         except Exception as e:
             print(e)
-        else:
-            # print(messages[-1][0])
-            self.__message_id = messages[-1][0] # set the last message id
+       
         
         
         

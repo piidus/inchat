@@ -1,6 +1,6 @@
 import flet as ft
 from components.models import Database, ChatHandler
-import os
+import time
 # @memory_test
 class Login(ft.Control):
     def __init__(self, page: ft.Page, pc, *args, **kwargs):
@@ -31,10 +31,20 @@ class Login(ft.Control):
 
     def dummy_50_messages(self,e):
         try:
+            start_time = time.time()
             chat_handler = ChatHandler()
-            for i in range(50):
-                chat_handler.insert_data(message=f" Dummy Message {i}")
-                    # print(new_chat)
+            for i in range(10000):
+                chat_handler.insert_data(message=f" Dummy Message")
+                #print(new_chat)
+            # Count lengrh of message and time
+            total_messages = len(chat_handler.all_chats())
+            end_time = time.time()
+            total_execution_time = end_time - start_time
+            # show a alert
+            self.page.snack_bar = ft.SnackBar(ft.Text(f"{total_messages} messages added in {total_execution_time} seconds"))
+            self.page.snack_bar.open = True
+            self.page.update()
+
         except Exception as e:
             print(e)
 

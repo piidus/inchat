@@ -83,6 +83,9 @@ class ChatHandler(Database):
     def last_10_messages(self):
         sql = "SELECT * FROM chats ORDER BY id DESC LIMIT 10"
         return self.fetch_all(sql)
+    def all_chats(self):
+        sql = "SELECT * FROM chats ORDER BY id DESC"
+        return self.fetch_all(sql)
     
     def get_previous_10_messages(self, index_no):
         ''' SQL query to fetch the previous 10 messages before the given index'''
