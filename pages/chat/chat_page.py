@@ -31,11 +31,12 @@ class Chat(Control):
 
     def keyboard_event(self, e: KeyboardEvent):
         if e.key :
-            # self.page.window_minimized = True
+            self.page.window_minimizable = True
             # Adjust layout or TextField height
             print("keyboard_show")
             self.page.update()
         elif e.key == "":
+            self.page.window_maximizable = True
             # self.page.window_maximized = True
             # Revert layout or TextField height
             self.page.update()
