@@ -6,16 +6,29 @@ class Ada(ft.Control):
         self.pc = pc  
         # page.title = "Adaptive Height Text Field"
     def content(self):
-        text_field = ft.TextField(
-            label="Enter your text",
-            adaptive=True,
-        )
+        chat_container = ft.Container(
+            # content=chat,
+            border=ft.border.all(1, ft.colors.OUTLINE),
+            border_radius=5,
+            padding=10,
+            expand=True,
+        ),
+        send_row = ft.Row(
+                    [
+                        # new_message,
+                        ft.IconButton(
+                            icon=ft.icons.SEND_ROUNDED,
+                            tooltip="Send message",
+                            # on_click=send_message_click,
+                        ),
+                    ]
+                ),
 
         # self.page.add(text_field)
 
         self.page.update()
         return ft.Column(
             controls=[
-                ft.ListView(controls=[ ft.Text("Adaptive Text Field"+ str(i)) for i in range(100)], padding=10),
-                text_field],
-        )
+                chat_container, 
+                send_row],
+            )
