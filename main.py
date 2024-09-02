@@ -12,7 +12,7 @@ def main(page: Page):
     pc = PageControl(page)
 
     # Load the first page
-    pc.load_page("Chat")
+    pc.load_page("Ada")
 
 app(target=main, assets_dir='assets')
 #flet run -r
